@@ -27,6 +27,11 @@
   define('OA_FAILURE', 113);
   define('OA_EXISTS', 114);
 
+  // Create song responses
+  define('SONG_CREATED', 115);
+  define('SONG_FAILURE', 116);
+  define('SONG_EXISTS', 117);
+
   // User authentication responses
   define('USER_AUTHENTICATED', 201);
   define('USER_NOT_FOUND', 202);

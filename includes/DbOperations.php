@@ -94,6 +94,31 @@
     }
 
     /*
+    Create Song function
+    Parameters: $name
+    Returns: String containing response message
+    */
+
+    public function createSong($title, $original_artist){
+      // Check if Original Artist is in DB and create if necessary
+      if(!$this->oaNameExists($original_artist)){
+            $this->createOA($original_artist);
+          }
+      $oaid = $this->getOAID($original_artist);
+      if(!$this->oaSongExists($oaid, $title)){
+        $stmt = $this->con->prepare("INSERT INTO songs (OAID, Title) VALUES (?, ?)");
+        $stmt->bind_param("ss", $oaid, $title);
+        if($stmt->execute()){
+            return SONG_CREATED;
+        }else{
+            return SONG_FAILURE;
+        }
+      }
+
+      return SONG_EXISTS;
+    }
+
+    /*
     Login User function
     Parameters: $email, $password
     Returns: String containing response message
@@ -189,6 +214,27 @@
       $stmt->execute();
       $stmt->store_result();
       return $stmt->num_rows > 0;
+    }
+
+    // Checks if original artist already has song by given title
+
+    private function oaSongExists($oaid, $title){
+      $stmt = $this->con->prepare("SELECT title FROM songs WHERE oaid = ? AND title = ?");
+      $stmt->bind_param("ss", $oaid, $title);
+      $stmt->execute();
+      $stmt->store_result();
+      return $stmt->num_rows > 0;
+    }
+
+    // Gets ID of Original Artist
+
+    private function getOAID($name){
+      $stmt = $this->con->prepare("SELECT ID from originalartists WHERE Name = ?");
+      $stmt->bind_param("s", $name);
+      $stmt->execute();
+      $stmt->bind_result($id);
+      $stmt->fetch();
+      return  $id;
     }
   }
 

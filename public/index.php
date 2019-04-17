@@ -165,8 +165,8 @@ $app->post('/createshow', function(Request $request, Response $response){
 });
 
 /*
-  endpoint: createShow
-  parameters: $user_id
+  endpoint: createOA
+  parameters: $name
   method: POST
 */
 
@@ -197,6 +197,51 @@ $app->post('/createoa', function(Request $request, Response $response){
             $message = array();
             $message['error'] = true;
             $message['message'] = 'Original Artist already exists';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+/*
+  endpoint: createSong
+  parameters: $title, $original_artist
+  method: POST
+*/
+
+$app->post('/createsong', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('title','original_artist'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $title = $request_data['title'];
+        $original_artist = $request_data['original_artist'];
+        $db = new DbOperations;
+        $result = $db->createSong($title, $original_artist);
+
+        if($result == SONG_CREATED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Song created successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == SONG_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to create Song';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == SONG_EXISTS){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Song already exists';
             $response->write(json_encode($message));
             return $response
                         ->withHeader('Content-type', 'application/json')
