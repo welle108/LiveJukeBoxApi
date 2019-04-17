@@ -56,6 +56,167 @@ $app->post('/createuser', function(Request $request, Response $response){
         ->withStatus(422);
 });
 
+/*
+  endpoint: createArtist
+  parameters: $user_id, $artist_email, $first_name, $last_name
+  method: POST
+*/
+
+$app->post('/createartist', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('user_id', 'artist_email', 'first_name', 'last_name'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $user_id = $request_data['user_id'];
+        $artist_email = $request_data['artist_email'];
+        $first_name = $request_data['first_name'];
+        $last_name = $request_data['last_name'];
+        $db = new DbOperations;
+        $result = $db->createArtist($user_id, $artist_email, $first_name, $last_name);
+
+        if($result == ARTIST_CREATED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Artist created successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == ARTIST_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to create Artist';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == ARTIST_USER_NOT_EXIST){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Artist User does not exist';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == USER_ARTIST_EXISTS){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'User already has Artist with that email';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+/*
+  endpoint: createShow
+  parameters: $user_id
+  method: POST
+*/
+
+$app->post('/createshow', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('user_id', 'name'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $user_id = $request_data['user_id'];
+        $name = $request_data['name'];
+        $db = new DbOperations;
+        $result = $db->createShow($user_id, $name);
+
+        if($result == SHOW_CREATED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Show created successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == SHOW_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to create Show';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == SHOW_USER_NOT_EXIST){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Show User does not exist';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == USER_SHOW_EXISTS){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'User already has Show with that email';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+/*
+  endpoint: createShow
+  parameters: $user_id
+  method: POST
+*/
+
+$app->post('/createoa', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('name'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $name = $request_data['name'];
+        $db = new DbOperations;
+        $result = $db->createOA($name);
+
+        if($result == OA_CREATED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Original Artist created successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == OA_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to create Original Artist';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == OA_EXISTS){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Original Artist already exists';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+/*
+  endpoint: userLogin
+  parameters: $email, $password
+  method: POST
+
+  Attempts to authenticate user with email and password
+
+*/
+
 $app->post('/userlogin', function(Request $request, Response $response){
   if(!haveEmptyParameters(array('email', 'password'), $response)){
     $request_data = $request->getParsedBody();
@@ -95,7 +256,7 @@ $app->post('/userlogin', function(Request $request, Response $response){
     }else if($result == USER_PASSWORD_INCORRECT){
       $response_data = array();
       $response_data['error'] = true;
-      $response_data['message'] = 'Login Failed. Invalid Credential';
+      $response_data['message'] = 'Login Failed. Incorrect password';
 
       $response->write(json_encode($response_data));
 
@@ -111,9 +272,7 @@ $app->post('/userlogin', function(Request $request, Response $response){
 
 });
 
-
-
-function haveEmptyParameters($required_params, $response){
+function haveEmptyParameters($required_params, $request, $response){
     $error = false;
     $error_params = '';
     $request_params = $_REQUEST;
