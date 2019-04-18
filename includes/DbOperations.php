@@ -96,7 +96,7 @@
     /*
     Create Song function
     Parameters: $name
-    Returns: String containing response message
+    Returns: Array with result message and id of new or existing song
     */
 
     public function createSong($title, $original_artist){
@@ -105,17 +105,24 @@
             $this->createOA($original_artist);
           }
       $oaid = $this->getOAID($original_artist);
-      if(!$this->oaSongExists($oaid, $title)){
+      $song_exists = $this->oaSongExists($oaid, $title);
+      if(!$song_exists['exists']){
         $stmt = $this->con->prepare("INSERT INTO songs (OAID, Title) VALUES (?, ?)");
         $stmt->bind_param("ss", $oaid, $title);
         if($stmt->execute()){
-            return SONG_CREATED;
+          $result = array();
+          $result['message'] = SONG_CREATED;
+          $result['id'] = $this->con->insert_id;
+            return $result;
         }else{
-            return SONG_FAILURE;
+          $result['message'] = SONG_FAILURE;
+            return $result;
         }
       }
 
-      return SONG_EXISTS;
+      $result['message'] = SONG_EXISTS;
+      $result['id'] = $song_exists['id'];
+        return $result;
     }
 
     /*
@@ -219,11 +226,26 @@
     // Checks if original artist already has song by given title
 
     private function oaSongExists($oaid, $title){
-      $stmt = $this->con->prepare("SELECT title FROM songs WHERE oaid = ? AND title = ?");
+      $stmt = $this->con->prepare("SELECT ID FROM songs WHERE oaid = ? AND title = ?");
       $stmt->bind_param("ss", $oaid, $title);
       $stmt->execute();
       $stmt->store_result();
-      return $stmt->num_rows > 0;
+      if($stmt->num_rows > 0){
+        $stmt = $this->con->prepare("SELECT ID FROM songs WHERE oaid = ? AND title = ?");
+        $stmt->bind_param("ss", $oaid, $title);
+        $stmt->execute();
+        $stmt->bind_result($id);
+        $stmt->fetch();
+        $result = array();
+        $result['exists'] = true;
+        $result['id'] = $id;
+        return $result;
+      }else{
+        $result = array();
+        $result['exists'] = false;
+        return $result;
+      }
+
     }
 
     // Gets ID of Original Artist

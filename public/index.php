@@ -222,15 +222,15 @@ $app->post('/createsong', function(Request $request, Response $response){
         $db = new DbOperations;
         $result = $db->createSong($title, $original_artist);
 
-        if($result == SONG_CREATED){
+        if($result['message'] == SONG_CREATED){
             $message = array();
             $message['error'] = false;
-            $message['message'] = 'Song created successfully';
+            $message['message'] = 'Song created successfully. ID: ' . $result['id'];
             $response->write(json_encode($message));
             return $response
                         ->withHeader('Content-type', 'application/json')
                         ->withStatus(201);
-        }else if($result == SONG_FAILURE){
+        }else if($result['message'] == SONG_FAILURE){
             $message = array();
             $message['error'] = true;
             $message['message'] = 'Some error occurred while attempting to create Song';
@@ -238,10 +238,10 @@ $app->post('/createsong', function(Request $request, Response $response){
             return $response
                         ->withHeader('Content-type', 'application/json')
                         ->withStatus(422);
-        }else if($result == SONG_EXISTS){
+        }else if($result['message'] == SONG_EXISTS){
             $message = array();
             $message['error'] = true;
-            $message['message'] = 'Song already exists';
+            $message['message'] = 'Song already exists. ID: ' . $result['id'];
             $response->write(json_encode($message));
             return $response
                         ->withHeader('Content-type', 'application/json')
