@@ -215,12 +215,14 @@ $app->post('/createoa', function(Request $request, Response $response){
 */
 
 $app->post('/createsong', function(Request $request, Response $response){
-    if(!haveEmptyParameters(array('title','original_artist'), $request, $response)){
+    if(!haveEmptyParameters(array('title','original_artist','artist_id', 'url'), $request, $response)){
         $request_data = $request->getParsedBody();
         $title = $request_data['title'];
         $original_artist = $request_data['original_artist'];
+        $artist_id = $request_data['artist_id'];
+        $url = $request_data['url'];
         $db = new DbOperations;
-        $result = $db->createSong($title, $original_artist);
+        $result = $db->createSong($title, $original_artist, $artist_id, $url);
 
         if($result['message'] == SONG_CREATED){
             $message = array();
@@ -254,6 +256,7 @@ $app->post('/createsong', function(Request $request, Response $response){
 });
 
 /*
+
   endpoint: userLogin
   parameters: $email, $password
   method: POST

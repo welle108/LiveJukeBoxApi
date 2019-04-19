@@ -99,7 +99,7 @@
     Returns: Array with result message and id of new or existing song
     */
 
-    public function createSong($title, $original_artist){
+    public function createSong($title, $original_artist, $artist_id, $url){
       // Check if Original Artist is in DB and create if necessary
       if(!$this->oaNameExists($original_artist)){
             $this->createOA($original_artist);
@@ -113,6 +113,8 @@
           $result = array();
           $result['message'] = SONG_CREATED;
           $result['id'] = $this->con->insert_id;
+          $result['link_created'] = $this->addSongURL($result['id'], $artist_id, $url);
+          $this->addSongtoArtist($result['id'], $artist_id);
             return $result;
         }else{
           $result['message'] = SONG_FAILURE;
@@ -122,8 +124,55 @@
 
       $result['message'] = SONG_EXISTS;
       $result['id'] = $song_exists['id'];
+      $url_exists = $this->songUrlExists($result['id'], $artist_id);
+      if($url_exists){
+        $result['url_exists'] = true;
         return $result;
+      }
+      $result['link_created'] = $this->addSongURL($result['id'], $artist_id, $url);
+      $this->addSongtoArtist($result['id'], $artist_id);
+      return $result;
     }
+
+    /*
+      Inserts song url into songlinks table
+    */
+
+    private function addSongURL($song_id, $artist_id, $url){
+      $stmt = $this->con->prepare("INSERT INTO songlinks (SongID, ArtistID, URL) VALUES (?, ?, ?)");
+      $stmt->bind_param("sss", $song_id, $artist_id, $url);
+      if($stmt->execute()){
+        return SONG_URL_CREATED;
+      }
+      return SONG_URL_FAILURE;
+    }
+
+    /*
+      Creates relationship between song and artist
+    */
+
+    private function addSongtoArtist($song_id, $artist_id){
+      $stmt = $this->con->prepare("INSERT INTO artistsongs (ArtistID, SongID) VALUES (?, ?)");
+      $stmt->bind_param("ss", $artist_id, $song_id);
+      if($stmt->execute()){
+        return ARTIST_SONG_CREATED;
+      }
+      return ARTIST_SONG_FAILURE;
+    }
+
+    //Checks if user inpu url is new and inserts if true
+
+    private function songUrlExists($song_id, $artist_id){
+        $stmt = $this->con->prepare("SELECT URL FROM songlinks WHERE SongID = ? AND ArtistID = ?");
+        $stmt->bind_param("ss", $song_id, $artist_id);
+        $stmt->execute();
+        $stmt->store_result();
+        if($stmt->num_rows > 0){
+          return true;
+        }
+        return false;
+    }
+
 
     /*
     Login User function
@@ -247,6 +296,7 @@
       }
 
     }
+
 
     // Gets ID of Original Artist
 

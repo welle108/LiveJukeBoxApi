@@ -32,6 +32,14 @@
   define('SONG_FAILURE', 116);
   define('SONG_EXISTS', 117);
 
+  //Create song url responses
+  define('SONG_URL_CREATED', 118);
+  define('SONG_URL_FAILURE', 119);
+
+  //Create artist-song responses
+  define('ARTIST_SONG_CREATED', 120);
+  define('ARTIST_SONG_FAILRE', 121);
+
   // User authentication responses
   define('USER_AUTHENTICATED', 201);
   define('USER_NOT_FOUND', 202);
