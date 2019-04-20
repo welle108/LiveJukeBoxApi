@@ -164,53 +164,10 @@ $app->post('/createshow', function(Request $request, Response $response){
         ->withStatus(422);
 });
 
-/*
-  endpoint: createOA
-  parameters: $name
-  method: POST
-*/
-
-$app->post('/createoa', function(Request $request, Response $response){
-    if(!haveEmptyParameters(array('name'), $request, $response)){
-        $request_data = $request->getParsedBody();
-        $name = $request_data['name'];
-        $db = new DbOperations;
-        $result = $db->createOA($name);
-
-        if($result == OA_CREATED){
-            $message = array();
-            $message['error'] = false;
-            $message['message'] = 'Original Artist created successfully';
-            $response->write(json_encode($message));
-            return $response
-                        ->withHeader('Content-type', 'application/json')
-                        ->withStatus(201);
-        }else if($result == OA_FAILURE){
-            $message = array();
-            $message['error'] = true;
-            $message['message'] = 'Some error occurred while attempting to create Original Artist';
-            $response->write(json_encode($message));
-            return $response
-                        ->withHeader('Content-type', 'application/json')
-                        ->withStatus(422);
-        }else if($result == OA_EXISTS){
-            $message = array();
-            $message['error'] = true;
-            $message['message'] = 'Original Artist already exists';
-            $response->write(json_encode($message));
-            return $response
-                        ->withHeader('Content-type', 'application/json')
-                        ->withStatus(422);
-        }
-    }
-    return $response
-        ->withHeader('Content-type', 'application/json')
-        ->withStatus(422);
-});
 
 /*
   endpoint: createSong
-  parameters: $title, $original_artist
+  parameters: $title, $original_artist, $artist_id, $url
   method: POST
 */
 
@@ -254,6 +211,108 @@ $app->post('/createsong', function(Request $request, Response $response){
         ->withHeader('Content-type', 'application/json')
         ->withStatus(422);
 });
+
+/*
+  endpoint: addArtistToShow
+  parameters: $artist_id, $show_id
+  method: POST
+*/
+
+$app->post('/addartistshow', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('artist_id', 'show_id'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $artist_id = $request_data['artist_id'];
+        $show_id = $request_data['show_id'];
+        $db = new DbOperations;
+        $result = $db->addArtistToShow($artist_id, $show_id);
+
+        if($result == SHOW_ARTIST_CREATED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Artist added to Show successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == SHOW_ARTIST_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to add Artist to Show';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }else if($result == SHOW_ARTIST_EXIST){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Artist is already in Show';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+/*
+  endpoint: addSongToShow
+  parameters: $show_id, $song_id, $artist_id
+  method: POST
+*/
+
+$app->post('/songtoqueue', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('show_id', 'song_id', 'artist_id'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $show_id = $request_data['show_id'];
+        $song_id = $request_data['song_id'];
+        $artist_id = $request_data['artist_id'];
+        $db = new DbOperations;
+        $result = $db->addSongToShow($show_id, $song_id, $artist_id);
+
+        if($result == SHOW_SONG_ADDED){
+            $message = array();
+            $message['error'] = false;
+            $message['message'] = 'Song added to Show successfully';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(201);
+        }else if($result == SHOW_SONG_FAILURE){
+            $message = array();
+            $message['error'] = true;
+            $message['message'] = 'Some error occurred while attempting to add Song to Show.';
+            $response->write(json_encode($message));
+            return $response
+                        ->withHeader('Content-type', 'application/json')
+                        ->withStatus(422);
+        }
+    }
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+$app->post('/getshowpos', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('show_id', 'song_id', 'artist_id', 'pos'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $show_id = $request_data['show_id'];
+        $song_id = $request_data['song_id'];
+        $artist_id = $request_data['artist_id'];
+        $pos = $request_data['pos'];
+        $db = new DbOperations;
+        $result = $db->getMaxPosition($show_id, $song_id, $artist_id, $pos);
+        $message = array();
+        $message['error'] = true;
+        $message['message'] = 'Max Position: ' .  $result;
+        $response->write(json_encode($message));
+
+        return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(422);
+}});
 
 /*
 

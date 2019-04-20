@@ -7,7 +7,9 @@
       require_once dirname(__FILE__) . '/DbConnect.php';
 
       $db = new DbConnect;
-
+      /*** THIS! ***/
+      mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+      /*** ^^^^^ ***/
       $this->con = $db->connect();
     }
 
@@ -114,7 +116,7 @@
           $result['message'] = SONG_CREATED;
           $result['id'] = $this->con->insert_id;
           $result['link_created'] = $this->addSongURL($result['id'], $artist_id, $url);
-          $this->addSongtoArtist($result['id'], $artist_id);
+          $this->addSongToArtist($result['id'], $artist_id);
             return $result;
         }else{
           $result['message'] = SONG_FAILURE;
@@ -130,7 +132,7 @@
         return $result;
       }
       $result['link_created'] = $this->addSongURL($result['id'], $artist_id, $url);
-      $this->addSongtoArtist($result['id'], $artist_id);
+      $this->addSongToArtist($result['id'], $artist_id);
       return $result;
     }
 
@@ -151,7 +153,7 @@
       Creates relationship between song and artist
     */
 
-    private function addSongtoArtist($song_id, $artist_id){
+    private function addSongToArtist($song_id, $artist_id){
       $stmt = $this->con->prepare("INSERT INTO artistsongs (ArtistID, SongID) VALUES (?, ?)");
       $stmt->bind_param("ss", $artist_id, $song_id);
       if($stmt->execute()){
@@ -160,7 +162,7 @@
       return ARTIST_SONG_FAILURE;
     }
 
-    //Checks if user inpu url is new and inserts if true
+    //Checks if user input url is new and inserts if true
 
     private function songUrlExists($song_id, $artist_id){
         $stmt = $this->con->prepare("SELECT URL FROM songlinks WHERE SongID = ? AND ArtistID = ?");
@@ -172,6 +174,67 @@
         }
         return false;
     }
+
+    /*
+      Adds Artist to Show
+    */
+
+    public function addArtistToShow($artist_id, $show_id){
+
+      if(!$this->showArtistExists($artist_id, $show_id))
+      {
+        $stmt = $this->con->prepare("INSERT INTO showartists (ArtistID, ShowID) VALUES (?, ?)");
+        $stmt->bind_param("ss", $artist_id, $show_id);
+        if($stmt->execute()){
+          return SHOW_ARTIST_CREATED;
+        }
+        return SHOW_ARTIST_FAILURE;
+      }
+      return SHOW_ARTIST_EXIST;
+    }
+
+    /*
+      Checks if show already contains artist
+    */
+
+    private function showArtistExists($artist_id, $show_id){
+      $stmt = $this->con->prepare("SELECT * FROM showartists WHERE ArtistID = ? AND ShowID = ?");
+      $stmt->bind_param("ss", $artist_id, $show_id);
+      $stmt->execute();
+      $stmt->store_result();
+      if($stmt->num_rows > 0){
+        return SHOW_ARTIST_EXIST;
+      }
+      return SHOW_ARTIST_NOT_EXIST;
+  }
+
+  /*
+    Adds Song to current song queue for Show
+  */
+
+  public function addSongToShow($show_id, $song_id, $artist_id){
+      $stmt = $this->con->prepare("SELECT COUNT(*) FROM (SELECT * FROM setqueues WHERE ShowID = ?) as c");
+      $stmt->bind_param("i", $show_id);
+      $stmt->execute();
+      $stmt->bind_result($count);
+      $stmt->fetch();
+      $pos = 0;
+      if($count == 0){
+        $pos = 1;
+      }else{
+        $pos = $count + 1;
+      }
+      $stmt->close();
+      $stmt = $this->con->prepare("INSERT INTO setqueues(ShowID, SongID, ArtistID, Position) VALUES (?, ?, ?, ?)");
+      $stmt->bind_param("iiii", $show_id, $song_id, $artist_id, $pos);
+      if($stmt->execute()){
+        return SHOW_SONG_ADDED;
+      }
+      return SHOW_SONG_FAILURE;
+
+  }
+
+
 
 
     /*
@@ -252,7 +315,7 @@
       return $stmt->num_rows > 0;
     }
 
-    // Checks if the given user already has an show with that name
+    // Checks if Original Artist exists in DB
 
     private function oaNameExists($name){
       $stmt = $this->con->prepare("SELECT * FROM originalartists WHERE REPLACE(Name, ' ', '') = REPLACE(?, ' ', '')");
@@ -296,7 +359,6 @@
       }
 
     }
-
 
     // Gets ID of Original Artist
 

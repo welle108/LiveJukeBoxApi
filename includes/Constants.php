@@ -38,7 +38,17 @@
 
   //Create artist-song responses
   define('ARTIST_SONG_CREATED', 120);
-  define('ARTIST_SONG_FAILRE', 121);
+  define('ARTIST_SONG_FAILURE', 121);
+
+  //Add artist to show responses
+  define('SHOW_ARTIST_EXIST', 122);
+  define('SHOW_ARTIST_NOT_EXIST', 123);
+  define('SHOW_ARTIST_CREATED', 124);
+  define('SHOW_ARTIST_FAILURE', 125);
+
+  //Create artist-song responses
+  define('SHOW_SONG_ADDED', 126);
+  define('SHOW_SONG_FAILURE', 127);
 
   // User authentication responses
   define('USER_AUTHENTICATED', 201);
