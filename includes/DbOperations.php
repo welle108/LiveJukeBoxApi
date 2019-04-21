@@ -7,9 +7,9 @@
       require_once dirname(__FILE__) . '/DbConnect.php';
 
       $db = new DbConnect;
-      /*** THIS! ***/
+      /*** Enable mysqli error reporting ***/
       mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-      /*** ^^^^^ ***/
+
       $this->con = $db->connect();
     }
 
@@ -180,33 +180,22 @@
     */
 
     public function addArtistToShow($artist_id, $show_id){
-
-      if(!$this->showArtistExists($artist_id, $show_id))
-      {
-        $stmt = $this->con->prepare("INSERT INTO showartists (ArtistID, ShowID) VALUES (?, ?)");
-        $stmt->bind_param("ss", $artist_id, $show_id);
-        if($stmt->execute()){
-          return SHOW_ARTIST_CREATED;
+        $stmt = $this->con->prepare("SELECT * FROM showartists WHERE ArtistID = ? AND ShowID = ?");
+        $stmt->bind_param("ii", $artist_id, $show_id);
+        $stmt->execute();
+        $stmt->store_result();
+        if($stmt->num_rows == 0){
+          $stmt->close();
+          $stmt = $this->con->prepare("INSERT INTO showartists (ArtistID, ShowID) VALUES (?, ?)");
+          $stmt->bind_param("ii", $artist_id, $show_id);
+          if($stmt->execute()){
+            return SHOW_ARTIST_CREATED;
+          }
+          return SHOW_ARTIST_FAILURE;
         }
-        return SHOW_ARTIST_FAILURE;
-      }
+
       return SHOW_ARTIST_EXIST;
     }
-
-    /*
-      Checks if show already contains artist
-    */
-
-    private function showArtistExists($artist_id, $show_id){
-      $stmt = $this->con->prepare("SELECT * FROM showartists WHERE ArtistID = ? AND ShowID = ?");
-      $stmt->bind_param("ss", $artist_id, $show_id);
-      $stmt->execute();
-      $stmt->store_result();
-      if($stmt->num_rows > 0){
-        return SHOW_ARTIST_EXIST;
-      }
-      return SHOW_ARTIST_NOT_EXIST;
-  }
 
   /*
     Adds Song to current song queue for Show
@@ -233,7 +222,6 @@
       return SHOW_SONG_FAILURE;
 
   }
-
 
 
 
@@ -315,6 +303,16 @@
       return $stmt->num_rows > 0;
     }
 
+    // Checks if the given user already has an show with that name
+
+    private function userShowIdExists($user_id, $show_id){
+      $stmt = $this->con->prepare("SELECT * FROM shows WHERE ShowID = ? AND UserID = ?");
+      $stmt->bind_param("ss", $show_id, $user_id);
+      $stmt->execute();
+      $stmt->store_result();
+      return $stmt->num_rows > 0;
+    }
+
     // Checks if Original Artist exists in DB
 
     private function oaNameExists($name){
@@ -369,6 +367,64 @@
       $stmt->bind_result($id);
       $stmt->fetch();
       return  $id;
+    }
+
+    //Verify user and return all artists belonging to user id
+
+    public function getUserArtists($email, $password){
+      if($this->userLogin($email, $password) == USER_AUTHENTICATED){
+        $user = $this->getUserByEmail($email);
+        $stmt = $this->con->prepare("SELECT ArtistID, ArtistEmail, FirstName, LastName FROM artists WHERE UserID = ?");
+        $stmt->bind_param("i",$user['id']);
+        $stmt->execute();
+        $stmt->bind_result($artist_id, $artist_email, $first_name, $last_name);
+        $artists = array();
+        while($stmt->fetch()){
+          $artist = array();
+          $artist['id'] = $artist_id;
+          $artist['email'] = $artist_email;
+          $artist['first_name'] = $first_name;
+          $artist['last_name'] = $last_name;
+          array_push($artists, $artist);
+        }
+        return $artists;
+      }
+      else{
+        return INCORRECT_USER_CREDENTIALS;
+      }
+    }
+
+    public function getShowInfo($email, $password, $show_id){
+      if($this->userLogin($email, $password) == USER_AUTHENTICATED){
+        $user = $this->getUserByEmail($email);
+        if($this->userShowIdExists($user['id'], $show_id)){
+          $stmt = $this->con->prepare("SELECT setqueues.Position ,songs.Title as SongTitle, songs.ID as SongID, artists.FirstName as ArtistFirstName , artists.LastName as ArtistLastName, artists.ArtistEmail as ArtistEmail, originalartists.Name as OriginalArtist, songs.OAID as OAID
+                                      FROM songs
+                                      INNER JOIN setqueues ON (songs.ID = setqueues.SongID AND setqueues.ShowID = 1)
+                                      INNER JOIN artists ON (artists.ArtistID = setqueues.ArtistID)
+                                      INNER JOIN originalartists ON(originalartists.ID = songs.OAID)
+                                      ORDER BY setqueues.Position ASC");
+          $stmt->bind_param("i",$user['id']);
+          $stmt->execute();
+          $stmt->bind_result($position, $song_title, $song_id, $artist_first_name, $artist_last_name, $artist_email, $original_artist_name, $oaid);
+          $songs = array();
+          while($stmt->fetch()){
+            $song = array();
+            $song['position'] = $position;
+            $song['song_title'] = $song_title;
+            $song['song_id'] = $song_id;
+            $song['artist_first_name'] = $artist_first_name;
+            $song['artist_last_name'] = $artist_last_name;
+            $song['artist_email'] = $artist_email;
+            $song['original_artist_name'] = $original_artist_name;
+            $song['oaid'] = $oaid;
+            array_push($songs, $song);
+          }
+          return $songs;
+        }
+        return INCORRECT_USER_CREDENTIALS;
+      }
+      return INCORRECT_USER_CREDENTIALS;
     }
   }
 

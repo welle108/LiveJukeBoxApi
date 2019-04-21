@@ -152,7 +152,7 @@ $app->post('/createshow', function(Request $request, Response $response){
         }else if($result == USER_SHOW_EXISTS){
             $message = array();
             $message['error'] = true;
-            $message['message'] = 'User already has Show with that email';
+            $message['message'] = 'User already has Show with that name';
             $response->write(json_encode($message));
             return $response
                         ->withHeader('Content-type', 'application/json')
@@ -295,23 +295,65 @@ $app->post('/songtoqueue', function(Request $request, Response $response){
         ->withStatus(422);
 });
 
-$app->post('/getshowpos', function(Request $request, Response $response){
-    if(!haveEmptyParameters(array('show_id', 'song_id', 'artist_id', 'pos'), $request, $response)){
-        $request_data = $request->getParsedBody();
-        $show_id = $request_data['show_id'];
-        $song_id = $request_data['song_id'];
-        $artist_id = $request_data['artist_id'];
-        $pos = $request_data['pos'];
-        $db = new DbOperations;
-        $result = $db->getMaxPosition($show_id, $song_id, $artist_id, $pos);
-        $message = array();
-        $message['error'] = true;
-        $message['message'] = 'Max Position: ' .  $result;
-        $response->write(json_encode($message));
+/*
+endpoint: getUserArtists()
+parameters: $email, $password
+method: POST
 
-        return $response
-                    ->withHeader('Content-type', 'application/json')
-                    ->withStatus(422);
+Returns all Artists belonging to User after verification
+*/
+
+$app->post('/getuserartists', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('email', 'password'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+        $db = new DbOperations;
+        $artists = $db->getUserArtists($email, $password);
+        $response_data = array();
+        if($artists == 128){
+          $response_data['error'] = true;
+          $response_data['message'] = "INCORRECT_USER_CREDENTIALS";
+        }
+        else{
+          $response_data['error'] = false;
+          $response_data['artists'] = $artists;
+        }
+
+        $response->write(json_encode($response_data));
+
+        return $response;
+}});
+
+/*
+endpoint: getUserArtists()
+parameters: $email, $password
+method: POST
+
+Returns all Artists belonging to User after verification
+*/
+
+$app->post('/getshowinfo', function(Request $request, Response $response){
+    if(!haveEmptyParameters(array('email', 'password', 'show_id'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+        $show_id = $request_data['show_id'];
+        $db = new DbOperations;
+        $songs = $db->getShowInfo($email, $password, $show_id);
+        $response_data = array();
+        if($songs == 128){
+          $response_data['error'] = true;
+          $response_data['message'] = "INCORRECT_USER_CREDENTIALS";
+        }
+        else{
+          $response_data['error'] = false;
+          $response_data['songs'] = $songs;
+        }
+
+        $response->write(json_encode($response_data));
+
+        return $response;
 }});
 
 /*

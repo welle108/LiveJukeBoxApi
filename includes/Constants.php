@@ -50,6 +50,8 @@
   define('SHOW_SONG_ADDED', 126);
   define('SHOW_SONG_FAILURE', 127);
 
+  define('INCORRECT_USER_CREDENTIALS', 128);
+
   // User authentication responses
   define('USER_AUTHENTICATED', 201);
   define('USER_NOT_FOUND', 202);
