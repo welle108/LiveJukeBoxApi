@@ -400,7 +400,7 @@
         if($this->userShowIdExists($user['id'], $show_id)){
           $stmt = $this->con->prepare("SELECT setqueues.Position ,songs.Title as SongTitle, songs.ID as SongID, artists.FirstName as ArtistFirstName , artists.LastName as ArtistLastName, artists.ArtistEmail as ArtistEmail, originalartists.Name as OriginalArtist, songs.OAID as OAID
                                       FROM songs
-                                      INNER JOIN setqueues ON (songs.ID = setqueues.SongID AND setqueues.ShowID = 1)
+                                      INNER JOIN setqueues ON (songs.ID = setqueues.SongID AND setqueues.ShowID = ?)
                                       INNER JOIN artists ON (artists.ArtistID = setqueues.ArtistID)
                                       INNER JOIN originalartists ON(originalartists.ID = songs.OAID)
                                       ORDER BY setqueues.Position ASC");
