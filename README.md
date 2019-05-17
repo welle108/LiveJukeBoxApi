@@ -1,13 +1,13 @@
 # LiveJukeBox
 An Android App for Live Music. To best view this file, go to
 
-##Setup Instructions
+## Setup Instructions
 ##### Warning: This app was developed in Windows and has never been tested on a MacOS machine. You can install xampp/composer on either so it will probably work regardless, but if you have any issues try on a Windows machine
 
-####1) Install xampp on your machine
+#### 1) Install xampp on your machine
 * [https://www.apachefriends.org/download.html]()
 
-####2) Install the PHP dependency manager Composer: 
+#### 2) Install the PHP dependency manager Composer: 
 * [Windows](https://getcomposer.org/download/)
 * [MacOS](https://pilsniak.com/install-composer-mac-os/)
 
@@ -22,7 +22,7 @@ If installation was succesful you will see a message like
 	
 
 
-####3)  Find the root directory for xxamp on your machine and navigate to the htdocs folder.
+#### 3)  Find the root directory for xxamp on your machine and navigate to the htdocs folder.
 In Windows, the default location for this is 
 
 >C:/xampp/htdocs
@@ -35,17 +35,17 @@ Once inside this folder, open a terminal and run the command
 
 This might take a few minutes
 
-####4) Open project directory in xampp/htdocs/LiveJukeBoxApi 
+#### 4) Open project directory in xampp/htdocs/LiveJukeBoxApi 
 Navigate to the public folder. Replace the index.php file with the one in the PHP_Backend folder of my submitted code, then create a directory called "includes" and copy the contents of the includes folder in my source code into this folder. Once properly set up it should like this:
 
-#####htdocs/LiveJukeBoxApi
+##### htdocs/LiveJukeBoxApi
 ![](https://i.imgur.com/x2DGScp.png)
-#####LiveJukeBoxApi/public
+##### LiveJukeBoxApi/public
 ![](https://imgur.com/HAZ3UYZ.png)
-#####LiveJukeBoxApi/includes
+##### LiveJukeBoxApi/includes
 ![](https://imgur.com/Mc9AeUp.png)
 
-####5) Configure php to send email
+#### 5) Configure php to send email
 Go back to the xampp root directory and navigate to the php folder. From there open the php.ini folder, press ctrl+f, find the sendmail function and replace what is there with
 
     SMTP=smtp.gmail.com
@@ -65,24 +65,24 @@ The last line for you will be different based on where xammp is installed on you
     auth_password=Avenue22
     force_sender=livejukeboxalerts@gmail.com
 
-####6) Open Xampp and run the Apache and MySQL local servers
+#### 6) Open Xampp and run the Apache and MySQL local servers
 ![](https://imgur.com/viCbQvL.png)
 
-####7) Create Database
+#### 7) Create Database
 Open a browser and go to http://localhost/phpmyadmin/
 
 Once inside of phpmyadmin, open an SQL terminal then copy and run the contents of LiveJukeBox.sql. This will create the database along with some preexisting data. 
 
-####6) Install Android Studio on your machine
+#### 6) Install Android Studio on your machine
 
-* #####[Download Link](https://developer.android.com/studio/?gclid=EAIaIQobChMItqC5vaSj4gIVCcRkCh0_rAENEAAYASAAEgJZHfD_BwE)
-* #####[Installation Instructions](https://developer.android.com/studio/install)
+##### * [Download Link](https://developer.android.com/studio/?gclid=EAIaIQobChMItqC5vaSj4gIVCcRkCh0_rAENEAAYASAAEgJZHfD_BwE)
+##### * [Installation Instructions](https://developer.android.com/studio/install)
 
 You should now be able to unzip and run the project in the Android directory of the LiveJukeBox source code
 
-####7) Create an emulator device
+#### 7) Create an emulator device
 ![](https://imgur.com/A8ILfbb.png)
 If you would like to log in to a previously made test account, use the credentials:
 
-#####Email: scott<span>@</span>gmail.com
-#####Password: password
+##### Email: scott<span>@</span>gmail.com
+##### Password: password
