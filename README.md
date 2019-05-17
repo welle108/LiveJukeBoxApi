@@ -82,6 +82,8 @@ You should now be able to unzip and run the project in the Android directory of 
 
 #### 7) Create an emulator device
 ![](https://imgur.com/A8ILfbb.png)
+
+From here you will be able to run and test LiveJukeBox
 If you would like to log in to a previously made test account, use the credentials:
 
 ##### Email: scott<span>@</span>gmail.com
